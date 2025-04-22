@@ -1,29 +1,29 @@
-/* 
+/*
  * Copyright (c) 2018, Houston Mechatronics Inc., JD Yamokoski
  * All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without 
+ * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, 
+ * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright 
- *    notice, this list of conditions and the following disclaimer in the 
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. Neither the name of the copyright holder nor the names of its 
- *    contributors may be used to endorse or promote products derived from 
- *    this software without specific prior written permission. 
+ * 3. Neither the name of the copyright holder nor the names of its
+ *    contributors may be used to endorse or promote products derived from
+ *    this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
- * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE 
- * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
- * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
- * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
 #include "natnet_messages.h"
@@ -44,7 +44,7 @@ namespace utilities
     iter += offset;
   }
 
-  template <typename T> 
+  template <typename T>
   void read_and_seek(MessageBuffer::const_iterator& iter, T& target)
   {
     // Breaking up the steps for clarity.
@@ -67,7 +67,7 @@ namespace utilities
           pOutMemberID = sourceID & 0x0000ffff;
   }
 
-  // Funtion that assigns a time code values to 5 variables passed as arguments
+  // Function that assigns a time code values to 5 variables passed as arguments
   // Requires an integer from the packet as the timecode and timecodeSubframe
   void decode_timecode(unsigned int inTimecode, unsigned int inTimecodeSubframe, int& hour, int& minute, int& second, int& frame, int& subframe)
   {
@@ -99,7 +99,7 @@ namespace utilities
 
 
 void ConnectionRequestMessage::serialize(
-  MessageBuffer& msgBuffer, 
+  MessageBuffer& msgBuffer,
   mocap_optitrack::DataModel const*)
 {
   natnet::Packet pkt;
@@ -114,7 +114,7 @@ void ConnectionRequestMessage::serialize(
 
 
 void ServerInfoMessage::deserialize(
-  MessageBuffer const& msgBuffer, 
+  MessageBuffer const& msgBuffer,
   mocap_optitrack::DataModel* dataModel)
 {
   char const* pBuffer = &msgBuffer[0];
@@ -133,7 +133,7 @@ void ServerInfoMessage::deserialize(
 
 void DataFrameMessage::RigidBodyMessagePart::deserialize(
   rclcpp::Logger logger,
-  MessageBuffer::const_iterator& msgBufferIter, 
+  MessageBuffer::const_iterator& msgBufferIter,
   mocap_optitrack::RigidBody& rigidBody,
   mocap_optitrack::Version const& natNetVersion)
 {
@@ -163,10 +163,10 @@ void DataFrameMessage::RigidBodyMessagePart::deserialize(
   if (natNetVersion >= mocap_optitrack::Version("2.6"))
   {
     // params
-    short params = 0; 
+    short params = 0;
     utilities::read_and_seek(msgBufferIter, params);
     rigidBody.isTrackingValid = params & 0x01; // 0x01 : rigid body was successfully tracked in this frame
-    RCLCPP_DEBUG(logger, "    Successfully tracked in this frame: %s", 
+    RCLCPP_DEBUG(logger, "    Successfully tracked in this frame: %s",
       (rigidBody.isTrackingValid ? "YES" : "NO"));
   }
 }
@@ -174,7 +174,7 @@ void DataFrameMessage::RigidBodyMessagePart::deserialize(
 
 void DataFrameMessage::deserialize(
   rclcpp::Logger logger,
-  MessageBuffer const& msgBuffer, 
+  MessageBuffer const& msgBuffer,
   mocap_optitrack::DataModel* dataModel)
 {
   // Get iterator to beginning of buffer and skip the header
@@ -186,7 +186,7 @@ void DataFrameMessage::deserialize(
   RCLCPP_DEBUG(logger, "=== BEGIN DATA FRAME ===");
   RCLCPP_DEBUG(logger, "Frame number: %d", dataModel->frameNumber);
 
-  // Here on out its conveinent to get a pointer directly
+  // Here on out its convenient to get a pointer directly
   // to the ModelFrame object as well as the NatNetVersion
   mocap_optitrack::ModelFrame* dataFrame = &(dataModel->dataFrame);
   mocap_optitrack::Version const& NatNetVersion = dataModel->getNatNetVersion();
@@ -219,7 +219,7 @@ void DataFrameMessage::deserialize(
     {
       // read marker positions
       utilities::read_and_seek(msgBufferIter, marker);
-      RCLCPP_DEBUG(logger, "    Marker %d: [x=%3.2f,y=%3.2f,z=%3.2f]", 
+      RCLCPP_DEBUG(logger, "    Marker %d: [x=%3.2f,y=%3.2f,z=%3.2f]",
         jcnt++, marker.x, marker.y, marker.z);
     }
   }
@@ -237,7 +237,7 @@ void DataFrameMessage::deserialize(
   {
     // read positions of 'other' markers
     utilities::read_and_seek(msgBufferIter, marker);
-    RCLCPP_DEBUG(logger, "  Marker %d: [x=%3.2f,y=%3.2f,z=%3.2f]", 
+    RCLCPP_DEBUG(logger, "  Marker %d: [x=%3.2f,y=%3.2f,z=%3.2f]",
         icnt++, marker.x, marker.y, marker.z);
     // Deprecated
   }
@@ -302,14 +302,14 @@ void DataFrameMessage::deserialize(
     // Loop through labeled markers
     for (int j=0; j < numLabeledMarkers; j++)
     {
-      int id = 0; 
+      int id = 0;
       utilities::read_and_seek(msgBufferIter, id);
       int modelId, markerId;
       utilities::decode_marker_id(id, modelId, markerId);
 
       mocap_optitrack::Marker marker;
       utilities::read_and_seek(msgBufferIter, marker);
-      
+
       float size;
       utilities::read_and_seek(msgBufferIter, size);
 
@@ -320,23 +320,23 @@ void DataFrameMessage::deserialize(
         utilities::read_and_seek(msgBufferIter, params);
         // marker was not visible (occluded) in this frame
         bool bOccluded = (params & 0x01) != 0;
-        // position provided by point cloud solve     
+        // position provided by point cloud solve
         bool bPCSolved = (params & 0x02) != 0;
         // position provided by model solve
-        bool bModelSolved = (params & 0x04) != 0;  
+        bool bModelSolved = (params & 0x04) != 0;
         if (NatNetVersion >= mocap_optitrack::Version("3.0"))
         {
           // marker has an associated model
           bool bHasModel = (params & 0x08) != 0;
           // marker is an unlabeled marker
-          bool bUnlabeled = (params & 0x10) != 0;   
-          // marker is an active marker 
+          bool bUnlabeled = (params & 0x10) != 0;
+          // marker is an active marker
           bool bActiveMarker = (params & 0x20) != 0;
         }
       }
 
       RCLCPP_DEBUG(logger, "  MarkerID: %d, ModelID: %d", markerId, modelId);
-      RCLCPP_DEBUG(logger, "    Pos: [%3.2f,%3.2f,%3.2f]", 
+      RCLCPP_DEBUG(logger, "    Pos: [%3.2f,%3.2f,%3.2f]",
         marker.x, marker.y, marker.z);
       RCLCPP_DEBUG(logger, "    Size: %3.2f", size);
 
@@ -367,7 +367,7 @@ void DataFrameMessage::deserialize(
         RCLCPP_DEBUG(logger, "Force plate ID: %d", forcePlateId);
 
         // Channel Count
-        int numChannels = 0; 
+        int numChannels = 0;
         utilities::read_and_seek(msgBufferIter, numChannels);
         RCLCPP_DEBUG(logger, "  Number of channels: %d", numChannels);
 
@@ -379,7 +379,7 @@ void DataFrameMessage::deserialize(
             utilities::read_and_seek(msgBufferIter, numFrames);
             for (int j = 0; j < numFrames; j++)
             {
-                float val = 0.0f;  
+                float val = 0.0f;
                 utilities::read_and_seek(msgBufferIter, val);
                 RCLCPP_DEBUG(logger, "      Frame %d: %3.2f", j, val);
             }
@@ -411,7 +411,7 @@ void DataFrameMessage::deserialize(
       for (int i = 0; i < numChannels; i++)
       {
         RCLCPP_DEBUG(logger, "    Channel %d: ", i);
-        int nFrames = 0; 
+        int nFrames = 0;
         utilities::read_and_seek(msgBufferIter, nFrames);
         for (int j = 0; j < nFrames; j++)
         {
@@ -478,7 +478,7 @@ void DataFrameMessage::deserialize(
   }
 
   // frame params
-  short params = 0;  
+  short params = 0;
   utilities::read_and_seek(msgBufferIter, params);
   // 0x01 Motive is recording
   bool bIsRecording = (params & 0x01) != 0;
@@ -486,7 +486,7 @@ void DataFrameMessage::deserialize(
   bool bTrackedModelsChanged = (params & 0x02) != 0;
 
   // end of data tag
-  int eod = 0; 
+  int eod = 0;
   utilities::read_and_seek(msgBufferIter, eod);
   RCLCPP_DEBUG(logger, "=== END DATA FRAME ===");
 }
@@ -494,7 +494,7 @@ void DataFrameMessage::deserialize(
 
 void MessageDispatcher::dispatch(
   rclcpp::Logger logger,
-  MessageBuffer const& msgBuffer, 
+  MessageBuffer const& msgBuffer,
   mocap_optitrack::DataModel* dataModel)
 {
   // Grab message ID by casting to a natnet packet type
