@@ -27,66 +27,41 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef __MOCAP_OPTITRACK_MOCAP_CONFIG_H__
-#define __MOCAP_OPTITRACK_MOCAP_CONFIG_H__
+#ifndef __MOCAP_OPTITRACK_UNLABELED_MARKER_PUBLISHER_H__
+#define __MOCAP_OPTITRACK_UNLABELED_MARKER_PUBLISHER_H__
 
-#include <vector>
-#include <string>
+#include <map>
+#include <memory>
 
 #include <ros/ros.h>
+#include <tf2_ros/transform_broadcaster.h>
+
+#include <mocap_optitrack/version.h>
+#include <mocap_optitrack/data_model.h>
+#include <mocap_optitrack/mocap_config.h>
 
 namespace mocap_optitrack
 {
 
-/// \brief Server communication info
-struct ServerDescription
+/// \brief Encapsulation of a RigidBody data publisher.
+class UnlabeledMarkerPublisher
 {
-  struct Default
-  {
-    static const int CommandPort;
-    static const int DataPort;
-    static const std::string MulticastIpAddress;
-    static const bool EnableOptitrack;
-  };
+public:
+  UnlabeledMarkerPublisher(ros::NodeHandle &nh,
+                     Version const& natNetVersion,
+                     PublisherConfiguration const& config);
+  ~UnlabeledMarkerPublisher();
+  void publish(ros::Time const& time, std::vector<Marker> const&);
 
-  ServerDescription();
-  int commandPort;
-  int dataPort;
-  std::string multicastIpAddress;
-  bool enableOptitrack;
-  std::vector<int> version;
-};
+private:
+  PublisherConfiguration config;
 
-/// \brief ROS publisher configuration
-struct PublisherConfiguration
-{
-  int rigidBodyId;
-  std::string pointTopicName;
-  std::string poseTopicName;
-  std::string pose2dTopicName;
-  std::string odomTopicName;
-  std::string enableTfPublisher;
-  std::string childFrameId;
-  std::string parentFrameId;
+  Version coordinatesVersion;
 
-  bool publishPoint;
-  bool publishPose;
-  bool publishPose2d;
-  bool publishOdom;
-  bool publishTf;
-};
-
-typedef std::vector<PublisherConfiguration> PublisherConfigurations;
-
-/// \brief Handles loading node configuration from different sources
-struct NodeConfiguration
-{
-  static void fromRosParam(ros::NodeHandle& nh,
-                           ServerDescription& serverDescription,
-                           PublisherConfigurations& rigidBodyConfigs,
-                           PublisherConfiguration& unlabeledMarkerConfigs);
+  tf2_ros::TransformBroadcaster tfPublisher;
+  ros::Publisher markerPublisher;
 };
 
 } // namespace
 
-#endif  // __MOCAP_OPTITRACK_MOCAP_CONFIG_H__
+#endif

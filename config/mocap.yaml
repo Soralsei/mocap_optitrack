@@ -17,6 +17,9 @@ rigid_bodies:
         tf: tf
         child_frame_id: Robot_2/base_link
         parent_frame_id: world
+unlabeled_markers:
+    point: unlabeled/markers
+    parent_frame_id: world
 optitrack_config:
         multicast_address: 224.0.0.1
         command_port: 1510

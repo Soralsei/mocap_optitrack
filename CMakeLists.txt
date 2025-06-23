@@ -14,18 +14,30 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   geometry_msgs
   nav_msgs
+  message_generation
   dynamic_reconfigure
-  tf)
+  tf
+  tf2
+)
 
 # dynamic reconfigure
 generate_dynamic_reconfigure_options(
   cfg/MocapOptitrack.cfg
 )
 
+add_message_files(
+  FILES
+  Markers.msg
+)
+
+generate_messages(
+  DEPENDENCIES
+  geometry_msgs
+)
 
 catkin_package(
   INCLUDE_DIRS include
-  CATKIN_DEPENDS roscpp
+  CATKIN_DEPENDS roscpp message_runtime
   dynamic_reconfigure
 )
 

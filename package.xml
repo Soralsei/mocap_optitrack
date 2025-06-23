@@ -31,6 +31,8 @@
   <url type="repository">https://github.com/ros-drivers/mocap_optitrack</url>
 
   <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>message_generation</build_depend>
+  <exec_depend>message_runtime</exec_depend>
 
   <depend>dynamic_reconfigure</depend>
   <depend>geometry_msgs</depend>

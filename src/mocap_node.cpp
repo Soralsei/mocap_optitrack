@@ -33,6 +33,7 @@
 #include <mocap_optitrack/data_model.h>
 #include <mocap_optitrack/mocap_config.h>
 #include <mocap_optitrack/rigid_body_publisher.h>
+#include <mocap_optitrack/unlabeled_marker_publisher.h>
 #include <mocap_optitrack/MocapOptitrackConfig.h>
 #include "natnet/natnet_messages.h"
 
@@ -40,140 +41,148 @@
 #include <memory>
 #include <ros/ros.h>
 
-
 namespace mocap_optitrack
 {
 
-class OptiTrackRosBridge
-{
-public:
-  OptiTrackRosBridge(ros::NodeHandle& nh,
-                     ServerDescription const& serverDescr,
-                     PublisherConfigurations const& pubConfigs) :
-    nh(nh), server(ros::NodeHandle("~/optitrack_config"))
+  class OptiTrackRosBridge
   {
-    server.setCallback(boost::bind(&OptiTrackRosBridge::reconfigureCallback, this, _1, _2));
-    serverDescription = serverDescr;
-    publisherConfigurations = pubConfigs;
-  }
-
-  void reconfigureCallback(MocapOptitrackConfig& config, uint32_t)
-  {
-    serverDescription.enableOptitrack = config.enable_optitrack;
-    serverDescription.commandPort = config.command_port;
-    serverDescription.dataPort = config.data_port;
-    serverDescription.multicastIpAddress = config.multicast_address;
-
-    initialize();
-  }
-
-  void initialize()
-  {
-    if (serverDescription.enableOptitrack)
+  public:
+    OptiTrackRosBridge(ros::NodeHandle &nh,
+                       ServerDescription const &serverDescr,
+                       PublisherConfigurations const &pubConfigs,
+                       PublisherConfiguration const &unlabeledConfig) : nh(nh), server(ros::NodeHandle("~/optitrack_config")), rigidBodyDispatcherPtr(nullptr), unlabeledMarkerPublisherPtr(nullptr)
     {
-      // Create socket
-      multicastClientSocketPtr.reset(
-        new UdpMulticastSocket(serverDescription.dataPort,
-                               serverDescription.multicastIpAddress));
-
-      if (!serverDescription.version.empty())
-      {
-        dataModel.setVersions(&serverDescription.version[0], &serverDescription.version[0]);
-      }
-
-      // Need verion information from the server to properly decode any of their packets.
-      // If we have not recieved that yet, send another request.
-      while (ros::ok() && !dataModel.hasServerInfo())
-      {
-        natnet::ConnectionRequestMessage connectionRequestMsg;
-        natnet::MessageBuffer connectionRequestMsgBuffer;
-        connectionRequestMsg.serialize(connectionRequestMsgBuffer, NULL);
-        int ret = multicastClientSocketPtr->send(
-                    &connectionRequestMsgBuffer[0],
-                    connectionRequestMsgBuffer.size(),
-                    serverDescription.commandPort);
-        if (updateDataModelFromServer()) usleep(10);
-        else sleep(1);
-
-        ros::spinOnce();
-      }
-      // Once we have the server info, create publishers
-      publishDispatcherPtr.reset(
-        new RigidBodyPublishDispatcher(nh,
-                                       dataModel.getNatNetVersion(),
-                                       publisherConfigurations));
-      ROS_INFO("Initialization complete");
-      initialized = true;
+      server.setCallback(boost::bind(&OptiTrackRosBridge::reconfigureCallback, this, _1, _2));
+      serverDescription = serverDescr;
+      publisherConfigurations = pubConfigs;
+      unlabeledMarkerConfiguration = unlabeledConfig;
     }
-    else
-    {
-      ROS_INFO("Initialization incomplete");
-      initialized = false;
-    }
-  };
 
-  void run()
-  {
-    while (ros::ok())
+    void reconfigureCallback(MocapOptitrackConfig &config, uint32_t)
     {
-      if (initialized)
+      serverDescription.enableOptitrack = config.enable_optitrack;
+      serverDescription.commandPort = config.command_port;
+      serverDescription.dataPort = config.data_port;
+      serverDescription.multicastIpAddress = config.multicast_address;
+
+      initialize();
+    }
+
+    void initialize()
+    {
+      if (serverDescription.enableOptitrack)
       {
-        if (updateDataModelFromServer())
+        // Create socket
+        multicastClientSocketPtr.reset(
+            new UdpMulticastSocket(serverDescription.dataPort,
+                                   serverDescription.multicastIpAddress));
+
+        if (!serverDescription.version.empty())
         {
-          // Maybe we got some data? If we did it would be in the form of one or more
-          // rigid bodies in the data model
-          ros::Time time = ros::Time::now();
-          publishDispatcherPtr->publish(time, dataModel.dataFrame.rigidBodies);
-
-          // Clear out the model to prepare for the next frame of data
-          dataModel.clear();
+          dataModel.setVersions(&serverDescription.version[0], &serverDescription.version[0]);
         }
-        // whether receive or nor, give a short break to relieft the CPU load due to while()
-        usleep(100);
+
+        // Need verion information from the server to properly decode any of their packets.
+        // If we have not recieved that yet, send another request.
+        while (ros::ok() && !dataModel.hasServerInfo())
+        {
+          natnet::ConnectionRequestMessage connectionRequestMsg;
+          natnet::MessageBuffer connectionRequestMsgBuffer;
+          connectionRequestMsg.serialize(connectionRequestMsgBuffer, NULL);
+          int ret = multicastClientSocketPtr->send(
+              &connectionRequestMsgBuffer[0],
+              connectionRequestMsgBuffer.size(),
+              serverDescription.commandPort);
+          if (updateDataModelFromServer())
+            usleep(10);
+          else
+            sleep(1);
+
+          ros::spinOnce();
+        }
+        // Once we have the server info, create publishers
+        rigidBodyDispatcherPtr.reset(
+            new RigidBodyPublishDispatcher(nh,
+                                           dataModel.getNatNetVersion(),
+                                           publisherConfigurations));
+        unlabeledMarkerPublisherPtr.reset(
+            new UnlabeledMarkerPublisher(nh,
+                                         dataModel.getNatNetVersion(),
+                                         unlabeledMarkerConfiguration));
+        ROS_INFO("Initialization complete");
+        initialized = true;
       }
       else
       {
-        ros::Duration(1.).sleep();
+        ROS_INFO("Initialization incomplete");
+        initialized = false;
       }
-      ros::spinOnce();
-    }
-  }
+    };
 
-private:
-  bool updateDataModelFromServer()
-  {
-    // Get data from mocap server
-    int numBytesReceived = multicastClientSocketPtr->recv();
-    if (numBytesReceived > 0)
+    void run()
     {
-      // Grab latest message buffer
-      const char* pMsgBuffer = multicastClientSocketPtr->getBuffer();
+      while (ros::ok())
+      {
+        if (initialized)
+        {
+          if (updateDataModelFromServer())
+          {
+            // Maybe we got some data? If we did it would be in the form of one or more
+            // rigid bodies in the data model
+            ros::Time time = ros::Time::now();
+            rigidBodyDispatcherPtr->publish(time, dataModel.dataFrame.rigidBodies);
+            unlabeledMarkerPublisherPtr->publish(time, dataModel.dataFrame.otherMarkers);
 
-      // Copy char* buffer into MessageBuffer and dispatch to be deserialized
-      natnet::MessageBuffer msgBuffer(pMsgBuffer, pMsgBuffer + numBytesReceived);
-      natnet::MessageDispatcher::dispatch(msgBuffer, &dataModel);
-
-      return true;
+            // Clear out the model to prepare for the next frame of data
+            dataModel.clear();
+          }
+          // whether receive or nor, give a short break to relieft the CPU load due to while()
+          usleep(100);
+        }
+        else
+        {
+          ros::Duration(1.).sleep();
+        }
+        ros::spinOnce();
+      }
     }
 
-    return false;
+  private:
+    bool updateDataModelFromServer()
+    {
+      // Get data from mocap server
+      int numBytesReceived = multicastClientSocketPtr->recv();
+      if (numBytesReceived > 0)
+      {
+        // Grab latest message buffer
+        const char *pMsgBuffer = multicastClientSocketPtr->getBuffer();
+
+        // Copy char* buffer into MessageBuffer and dispatch to be deserialized
+        natnet::MessageBuffer msgBuffer(pMsgBuffer, pMsgBuffer + numBytesReceived);
+        natnet::MessageDispatcher::dispatch(msgBuffer, &dataModel);
+
+        return true;
+      }
+
+      return false;
+    };
+
+    ros::NodeHandle &nh;
+    ServerDescription serverDescription;
+    PublisherConfigurations publisherConfigurations;
+    PublisherConfiguration unlabeledMarkerConfiguration;
+    DataModel dataModel;
+    std::unique_ptr<UdpMulticastSocket> multicastClientSocketPtr;
+    std::unique_ptr<RigidBodyPublishDispatcher> rigidBodyDispatcherPtr;
+    std::unique_ptr<UnlabeledMarkerPublisher> unlabeledMarkerPublisherPtr;
+    dynamic_reconfigure::Server<MocapOptitrackConfig> server;
+    bool initialized;
   };
 
-  ros::NodeHandle& nh;
-  ServerDescription serverDescription;
-  PublisherConfigurations publisherConfigurations;
-  DataModel dataModel;
-  std::unique_ptr<UdpMulticastSocket> multicastClientSocketPtr;
-  std::unique_ptr<RigidBodyPublishDispatcher> publishDispatcherPtr;
-  dynamic_reconfigure::Server<MocapOptitrackConfig> server;
-  bool initialized;
-};
-
-}  // namespace mocap_optitrack
-
+} // namespace mocap_optitrack
 
 ////////////////////////////////////////////////////////////////////////
-int main(int argc, char* argv[])
+int main(int argc, char *argv[])
 {
   // Initialize ROS node
   ros::init(argc, argv, "mocap_node");
@@ -182,10 +191,11 @@ int main(int argc, char* argv[])
   // Grab node configuration from rosparam
   mocap_optitrack::ServerDescription serverDescription;
   mocap_optitrack::PublisherConfigurations publisherConfigurations;
-  mocap_optitrack::NodeConfiguration::fromRosParam(nh, serverDescription, publisherConfigurations);
+  mocap_optitrack::PublisherConfiguration unlabeledMarkerConfiguration;
+  mocap_optitrack::NodeConfiguration::fromRosParam(nh, serverDescription, publisherConfigurations, unlabeledMarkerConfiguration);
 
   // Create node object, initialize and run
-  mocap_optitrack::OptiTrackRosBridge node(nh, serverDescription, publisherConfigurations);
+  mocap_optitrack::OptiTrackRosBridge node(nh, serverDescription, publisherConfigurations, unlabeledMarkerConfiguration);
   node.initialize();
   node.run();
 

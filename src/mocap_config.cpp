@@ -79,9 +79,11 @@ const std::string DataPort = "optitrack_config/data_port";
 const std::string EnableOptitrack = "optitrack_config/enable_optitrack";
 const std::string Version = "optitrack_config/version";
 const std::string RigidBodies = "rigid_bodies";
+const std::string UnlabeledMarkers = "unlabeled_markers";
 const std::string PoseTopicName = "pose";
 const std::string Pose2dTopicName = "pose2d";
 const std::string OdomTopicName = "odom";
+const std::string PointTopicName = "odom";
 const std::string EnableTfPublisher = "tf";
 const std::string ChildFrameId = "child_frame_id";
 const std::string ParentFrameId = "parent_frame_id";
@@ -98,7 +100,8 @@ ServerDescription::ServerDescription() :
 void NodeConfiguration::fromRosParam(
   ros::NodeHandle& nh,
   ServerDescription& serverDescription,
-  PublisherConfigurations& pubConfigs)
+  PublisherConfigurations& rigidBodyConfigs,
+  PublisherConfiguration& unlabeledMarkerConfig)
 {
   // Get server cconfiguration from ROS parameter server
   if (nh.hasParam(rosparam::keys::MulticastIpAddress))
@@ -251,10 +254,16 @@ void NodeConfiguration::fromRosParam(
             publisherConfig.publishTf = true;
           }
 
-          pubConfigs.push_back(publisherConfig);
+          rigidBodyConfigs.push_back(publisherConfig);
         }
       }
     }
+  }
+
+  if (nh.hasParam(rosparam::keys::UnlabeledMarkers)) {
+    bool hasPointTopicName = nh.getParam(rosparam::keys::PointTopicName, unlabeledMarkerConfig.pointTopicName);
+    bool hasParentFrameId = nh.getParam(rosparam::keys::PointTopicName, unlabeledMarkerConfig.pointTopicName);
+    unlabeledMarkerConfig.publishPoint = hasPointTopicName;
   }
 }
 
