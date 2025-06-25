@@ -8,7 +8,7 @@ add_executable(${PROJECT_NAME}_mocap_node
   mocap_config.cpp
   data_model.cpp
   rigid_body_publisher.cpp
-  unlabeled_marker_publisher.cpp
+  marker_publisher.cpp
 )
 
 target_link_libraries(${PROJECT_NAME}_mocap_node ${catkin_LIBRARIES})

@@ -27,12 +27,14 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-#include <mocap_optitrack/unlabeled_marker_publisher.h>
+#include <mocap_optitrack_msgs/Marker.h>
+#include <mocap_optitrack_msgs/MarkerInfo.h>
+#include <mocap_optitrack_msgs/Markers.h>
+#include <mocap_optitrack/marker_publisher.h>
 
 #include <geometry_msgs/TransformStamped.h>
-#include <geometry_msgs/PointStamped.h>
+#include <geometry_msgs/Point.h>
 #include <nav_msgs/Odometry.h>
-#include <mocap_optitrack/Markers.h>
 #include <vector>
 
 namespace mocap_optitrack
@@ -40,64 +42,78 @@ namespace mocap_optitrack
 
   namespace utilities
   {
-    geometry_msgs::PointStamped getRosPoint(Marker const &marker, const Version &coordinatesVersion)
+    geometry_msgs::Point getRosPoint(Marker const &marker, const Version &coordinatesVersion)
     {
-      geometry_msgs::PointStamped pointStamped;
+      geometry_msgs::Point point;
       if (coordinatesVersion < Version("2.0") && coordinatesVersion >= Version("1.7"))
       {
         // Motive 1.7+ and < Motive 2.0 coordinate system
-        pointStamped.point.x = -marker.x;
-        pointStamped.point.y = marker.z;
-        pointStamped.point.z = marker.y;
+        point.x = -marker.point.x;
+        point.y = marker.point.z;
+        point.z = marker.point.y;
       }
       else
       {
         // y & z axes are swapped in the Optitrack coordinate system
         // Also compatible with versions > Motive 2.0
-        pointStamped.point.x = marker.x;
-        pointStamped.point.y = -marker.z;
-        pointStamped.point.z = marker.y;
+        point.x = marker.point.x;
+        point.y = -marker.point.z;
+        point.z = marker.point.y;
       }
-      return pointStamped;
+      return point;
     }
   } // namespace utilities
 
-  UnlabeledMarkerPublisher::UnlabeledMarkerPublisher(ros::NodeHandle &nh,
+  MarkerPublisher::MarkerPublisher(ros::NodeHandle &nh,
                                                      Version const &natNetVersion,
                                                      PublisherConfiguration const &config) : config(config)
   {
     if (config.publishPoint)
-      markerPublisher = nh.advertise<geometry_msgs::PointStamped>(config.pointTopicName, 1000);
+    {
+      markerPublisher = nh.advertise<mocap_optitrack_msgs::Markers>(config.markerTopicName, 1000);
+      ROS_INFO_STREAM("Publishing on topic " << config.markerTopicName);
+    }
 
     // Motive 1.7+ uses a new coordinate system
     // natNetVersion = (natNetVersion >= Version("1.7"));
     coordinatesVersion = natNetVersion;
   }
 
-  UnlabeledMarkerPublisher::~UnlabeledMarkerPublisher()
+  MarkerPublisher::~MarkerPublisher()
   {
   }
 
-  void UnlabeledMarkerPublisher::publish(ros::Time const &time, std::vector<Marker> const &markers)
+  void MarkerPublisher::publish(ros::Time const &time, std::vector<Marker> const &markers)
   {
-    std::vector<geometry_msgs::PointStamped> points;
+    mocap_optitrack_msgs::Markers markers_msg;
     for (auto &&marker : markers)
     {
       // NaN?
-      if (marker.x != marker.x)
+      if (marker.point.x != marker.point.x)
       {
         ROS_WARN("Marker contains NaN");
         continue;
       }
 
-      geometry_msgs::PointStamped point = utilities::getRosPoint(marker, coordinatesVersion);
+      mocap_optitrack_msgs::Marker marker_msg;
+      marker_msg.point = utilities::getRosPoint(marker, coordinatesVersion);
 
-      point.header.stamp = time;
-      point.header.frame_id = config.parentFrameId;
-      points.push_back(point);
+      marker_msg.header.stamp = time;
+      marker_msg.header.frame_id = config.parentFrameId;
+
+      marker_msg.info.markerId = marker.info.markerId;
+      marker_msg.info.modelId = marker.info.modelId;
+      marker_msg.info.size = marker.info.active;
+      marker_msg.info.occluded = marker.info.active;
+      marker_msg.info.pcSolved = marker.info.active;
+      marker_msg.info.modelSolved = marker.info.active;
+      marker_msg.info.hasModel = marker.info.active;
+      marker_msg.info.unlabeled = marker.info.active;
+      marker_msg.info.active = marker.info.active;
+      marker_msg.info.residual = marker.info.residual;
+
+      markers_msg.markers.push_back(marker_msg);
     }
-    mocap_optitrack::Markers m;
-    m.markers = points;
-    markerPublisher.publish(m);
+    markerPublisher.publish(markers_msg);
   }
 } // namespace mocap_optitrack

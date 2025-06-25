@@ -27,8 +27,8 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef __MOCAP_OPTITRACK_UNLABELED_MARKER_PUBLISHER_H__
-#define __MOCAP_OPTITRACK_UNLABELED_MARKER_PUBLISHER_H__
+#ifndef __MOCAP_OPTITRACK_MARKER_PUBLISHER_H__
+#define __MOCAP_OPTITRACK_MARKER_PUBLISHER_H__
 
 #include <map>
 #include <memory>
@@ -44,13 +44,13 @@ namespace mocap_optitrack
 {
 
 /// \brief Encapsulation of a RigidBody data publisher.
-class UnlabeledMarkerPublisher
+class MarkerPublisher
 {
 public:
-  UnlabeledMarkerPublisher(ros::NodeHandle &nh,
+  MarkerPublisher(ros::NodeHandle &nh,
                      Version const& natNetVersion,
                      PublisherConfiguration const& config);
-  ~UnlabeledMarkerPublisher();
+  ~MarkerPublisher();
   void publish(ros::Time const& time, std::vector<Marker> const&);
 
 private:

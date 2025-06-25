@@ -217,9 +217,9 @@ void DataFrameMessage::deserialize(
     for (auto& marker : markerSet.markers)
     {
       // read marker positions
-      utilities::read_and_seek(msgBufferIter, marker);
+      utilities::read_and_seek(msgBufferIter, marker.point);
       ROS_DEBUG("    Marker %d: [x=%3.2f,y=%3.2f,z=%3.2f]", 
-        jcnt++, marker.x, marker.y, marker.z);
+        jcnt++, marker.point.x, marker.point.y, marker.point.z);
     }
   }
 
@@ -237,7 +237,7 @@ void DataFrameMessage::deserialize(
     // read positions of 'other' markers
     utilities::read_and_seek(msgBufferIter, marker);
     ROS_DEBUG("  Marker %d: [x=%3.2f,y=%3.2f,z=%3.2f]", 
-        icnt++, marker.x, marker.y, marker.z);
+        icnt++, marker.point.x, marker.point.y, marker.point.z);
     // Deprecated
   }
 
@@ -297,20 +297,16 @@ void DataFrameMessage::deserialize(
     int numLabeledMarkers = 0;
     utilities::read_and_seek(msgBufferIter, numLabeledMarkers);
     ROS_DEBUG("Labeled marker count: %d", numLabeledMarkers);
+    dataFrame->labeledMarkers.resize(numLabeledMarkers);
 
     // Loop through labeled markers
-    for (int j=0; j < numLabeledMarkers; j++)
+    for (auto &marker : dataFrame->labeledMarkers)
     {
       int id = 0; 
       utilities::read_and_seek(msgBufferIter, id);
-      int modelId, markerId;
-      utilities::decode_marker_id(id, modelId, markerId);
-
-      mocap_optitrack::Marker marker;
-      utilities::read_and_seek(msgBufferIter, marker);
-      
-      float size;
-      utilities::read_and_seek(msgBufferIter, size);
+      utilities::decode_marker_id(id, marker.info.modelId, marker.info.markerId);
+      utilities::read_and_seek(msgBufferIter, marker.point);
+      utilities::read_and_seek(msgBufferIter, marker.info.size);
 
       if (NatNetVersion >= mocap_optitrack::Version("2.6"))
       {
@@ -318,34 +314,33 @@ void DataFrameMessage::deserialize(
         short params = 0;
         utilities::read_and_seek(msgBufferIter, params);
         // marker was not visible (occluded) in this frame
-        bool bOccluded = (params & 0x01) != 0;
+        marker.info.occluded = (params & 0x01) != 0;
         // position provided by point cloud solve     
-        bool bPCSolved = (params & 0x02) != 0;
+        marker.info.pcSolved = (params & 0x02) != 0;
         // position provided by model solve
-        bool bModelSolved = (params & 0x04) != 0;  
+        marker.info.modelSolved = (params & 0x04) != 0;  
         if (NatNetVersion >= mocap_optitrack::Version("3.0"))
         {
           // marker has an associated model
-          bool bHasModel = (params & 0x08) != 0;
+          marker.info.hasModel = (params & 0x08) != 0;
           // marker is an unlabeled marker
-          bool bUnlabeled = (params & 0x10) != 0;   
+          marker.info.unlabeled = (params & 0x10) != 0;   
           // marker is an active marker 
-          bool bActiveMarker = (params & 0x20) != 0;
+          marker.info.active = (params & 0x20) != 0;
         }
       }
 
-      ROS_DEBUG("  MarkerID: %d, ModelID: %d", markerId, modelId);
-      ROS_DEBUG("    Pos: [%3.2f,%3.2f,%3.2f]", 
-        marker.x, marker.y, marker.z);
-      ROS_DEBUG("    Size: %3.2f", size);
+      ROS_INFO("  MarkerID: %d, ModelID: %d", marker.info.markerId, marker.info.modelId);
+      ROS_INFO("    Pos: [%3.2f,%3.2f,%3.2f]", 
+        marker.point.x, marker.point.y, marker.point.z);
+      ROS_INFO("    Size: %3.2f", marker.info.size);
 
       // NatNet version 3.0 and later
       if (NatNetVersion >= mocap_optitrack::Version("3.0"))
       {
         // Marker residual
-        float residual = 0.0f;
-        utilities::read_and_seek(msgBufferIter, residual);
-        ROS_DEBUG("    Residual:  %3.2f", residual);
+        utilities::read_and_seek(msgBufferIter, marker.info.residual);
+        ROS_INFO("    Residual:  %3.2f", marker.info.residual);
       }
     }
   }

@@ -61,7 +61,7 @@ struct ServerDescription
 struct PublisherConfiguration
 {
   int rigidBodyId;
-  std::string pointTopicName;
+  std::string markerTopicName;
   std::string poseTopicName;
   std::string pose2dTopicName;
   std::string odomTopicName;
@@ -84,7 +84,7 @@ struct NodeConfiguration
   static void fromRosParam(ros::NodeHandle& nh,
                            ServerDescription& serverDescription,
                            PublisherConfigurations& rigidBodyConfigs,
-                           PublisherConfiguration& unlabeledMarkerConfigs);
+                           PublisherConfiguration& markerConfig);
 };
 
 } // namespace

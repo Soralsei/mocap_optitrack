@@ -63,6 +63,7 @@ void ModelFrame::clear()
 {
   markerSets.clear();
   otherMarkers.clear();
+  labeledMarkers.clear();
   rigidBodies.clear();
 }
 

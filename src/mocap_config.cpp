@@ -79,11 +79,11 @@ const std::string DataPort = "optitrack_config/data_port";
 const std::string EnableOptitrack = "optitrack_config/enable_optitrack";
 const std::string Version = "optitrack_config/version";
 const std::string RigidBodies = "rigid_bodies";
-const std::string UnlabeledMarkers = "unlabeled_markers";
+const std::string Markers = "markers";
 const std::string PoseTopicName = "pose";
 const std::string Pose2dTopicName = "pose2d";
 const std::string OdomTopicName = "odom";
-const std::string PointTopicName = "odom";
+const std::string PointTopicName = "point";
 const std::string EnableTfPublisher = "tf";
 const std::string ChildFrameId = "child_frame_id";
 const std::string ParentFrameId = "parent_frame_id";
@@ -101,7 +101,7 @@ void NodeConfiguration::fromRosParam(
   ros::NodeHandle& nh,
   ServerDescription& serverDescription,
   PublisherConfigurations& rigidBodyConfigs,
-  PublisherConfiguration& unlabeledMarkerConfig)
+  PublisherConfiguration& markerConfig)
 {
   // Get server cconfiguration from ROS parameter server
   if (nh.hasParam(rosparam::keys::MulticastIpAddress))
@@ -150,10 +150,11 @@ void NodeConfiguration::fromRosParam(
   }
   else
   {
-    ROS_WARN_STREAM("Could not get server version, using auto");
+    ROS_WARN_STREAM("Could not get server version, using auto blablabla");
   }
 
   // Parse rigid bodies section
+  ROS_INFO("Parsing Rigid bodies section");
   if (nh.hasParam(rosparam::keys::RigidBodies))
   {
     XmlRpc::XmlRpcValue bodyList;
@@ -259,11 +260,13 @@ void NodeConfiguration::fromRosParam(
       }
     }
   }
+  ROS_INFO("Parsed RigidBodies section");
 
-  if (nh.hasParam(rosparam::keys::UnlabeledMarkers)) {
-    bool hasPointTopicName = nh.getParam(rosparam::keys::PointTopicName, unlabeledMarkerConfig.pointTopicName);
-    bool hasParentFrameId = nh.getParam(rosparam::keys::PointTopicName, unlabeledMarkerConfig.pointTopicName);
-    unlabeledMarkerConfig.publishPoint = hasPointTopicName;
+  if (nh.hasParam(rosparam::keys::Markers)) {
+    bool hasPointTopicName = nh.getParam(rosparam::keys::Markers + "/" + rosparam::keys::PointTopicName, markerConfig.markerTopicName);
+    bool hasParentFrameId = nh.getParam(rosparam::keys::Markers + "/" + rosparam::keys::ParentFrameId, markerConfig.parentFrameId);
+    markerConfig.publishPoint = hasPointTopicName && hasParentFrameId;
+    ROS_INFO_COND(markerConfig.publishPoint, "Publishing free markers");
   }
 }
 
