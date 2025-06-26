@@ -330,17 +330,17 @@ void DataFrameMessage::deserialize(
         }
       }
 
-      ROS_INFO("  MarkerID: %d, ModelID: %d", marker.info.markerId, marker.info.modelId);
-      ROS_INFO("    Pos: [%3.2f,%3.2f,%3.2f]", 
+      ROS_DEBUG("  MarkerID: %d, ModelID: %d", marker.info.markerId, marker.info.modelId);
+      ROS_DEBUG("    Pos: [%3.2f,%3.2f,%3.2f]", 
         marker.point.x, marker.point.y, marker.point.z);
-      ROS_INFO("    Size: %3.2f", marker.info.size);
+      ROS_DEBUG("    Size: %3.2f", marker.info.size);
 
       // NatNet version 3.0 and later
       if (NatNetVersion >= mocap_optitrack::Version("3.0"))
       {
         // Marker residual
         utilities::read_and_seek(msgBufferIter, marker.info.residual);
-        ROS_INFO("    Residual:  %3.2f", marker.info.residual);
+        ROS_DEBUG("    Residual:  %3.2f", marker.info.residual);
       }
     }
   }
