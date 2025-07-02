@@ -235,7 +235,7 @@ void DataFrameMessage::deserialize(
   for (auto& marker : dataFrame->otherMarkers)
   {
     // read positions of 'other' markers
-    utilities::read_and_seek(msgBufferIter, marker);
+    utilities::read_and_seek(msgBufferIter, marker.point);
     ROS_DEBUG("  Marker %d: [x=%3.2f,y=%3.2f,z=%3.2f]", 
         icnt++, marker.point.x, marker.point.y, marker.point.z);
     // Deprecated

@@ -2,13 +2,13 @@
 # Definition of all trackable objects
 # Identifier corresponds to Trackable ID set in Tracking Tools
 #
-# rigid_bodies:
-    # '1':
-    #     pose: lidar/pose
-    #     pose2d: lidar/ground_pose
-    #     tf: tf
-    #     child_frame_id: mocap/lidar
-    #     parent_frame_id: world
+rigid_bodies:
+    '1':
+        pose: lidar/pose
+        # pose2d: lidar/ground_pose
+        tf: tf
+        child_frame_id: mocap/lidar
+        parent_frame_id: world
 #     '2':
 #         pose: Robot_2/pose
 #         pose2d: Robot_2/ground_pose
