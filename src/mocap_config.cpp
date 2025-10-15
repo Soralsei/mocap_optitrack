@@ -150,7 +150,7 @@ void NodeConfiguration::fromRosParam(
   }
   else
   {
-    ROS_WARN_STREAM("Could not get server version, using auto blablabla");
+    ROS_WARN_STREAM("Could not get server version, using auto");
   }
 
   // Parse rigid bodies section
@@ -265,9 +265,10 @@ void NodeConfiguration::fromRosParam(
   if (nh.hasParam(rosparam::keys::Markers)) {
     bool hasMarkerTopicName = nh.getParam(rosparam::keys::Markers + "/" + rosparam::keys::MarkerTopic, markerConfig.markerTopicName);
     bool hasParentFrameId = nh.getParam(rosparam::keys::Markers + "/" + rosparam::keys::ParentFrameId, markerConfig.parentFrameId);
-    markerConfig.publishMarker = hasMarkerTopicName && hasParentFrameId;
-    ROS_INFO_COND(markerConfig.publishMarker, "Publishing free markers");
+    markerConfig.publishMarkers = hasMarkerTopicName && hasParentFrameId;
+    ROS_INFO_COND(markerConfig.publishMarkers, "Publishing Unlabeled markers");
   }
+  ROS_INFO("Parsed Unlabeled markers section");
 }
 
 }  // namespace mocap_optitrack
