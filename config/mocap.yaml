@@ -10,7 +10,7 @@ rigid_bodies:
         child_frame_id: mocap/lidar
         parent_frame_id: world
 markers:
-    point: markers
+    topic: markers
     parent_frame_id: world
 optitrack_config:
         multicast_address: 224.0.0.1

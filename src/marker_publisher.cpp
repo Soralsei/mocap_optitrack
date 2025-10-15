@@ -68,7 +68,7 @@ namespace mocap_optitrack
                                                      Version const &natNetVersion,
                                                      PublisherConfiguration const &config) : config(config)
   {
-    if (config.publishPoint)
+    if (config.publishMarkers)
     {
       markerPublisher = nh.advertise<mocap_optitrack::Markers>(config.markerTopicName, 1000);
       ROS_INFO_STREAM("Publishing on topic " << config.markerTopicName);

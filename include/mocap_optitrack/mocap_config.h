@@ -69,7 +69,7 @@ struct PublisherConfiguration
   std::string childFrameId;
   std::string parentFrameId;
 
-  bool publishPoint;
+  bool publishMarkers;
   bool publishPose;
   bool publishPose2d;
   bool publishOdom;

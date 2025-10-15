@@ -83,7 +83,7 @@ const std::string Markers = "markers";
 const std::string PoseTopicName = "pose";
 const std::string Pose2dTopicName = "pose2d";
 const std::string OdomTopicName = "odom";
-const std::string PointTopicName = "point";
+const std::string MarkerTopic = "topic";
 const std::string EnableTfPublisher = "tf";
 const std::string ChildFrameId = "child_frame_id";
 const std::string ParentFrameId = "parent_frame_id";
@@ -263,10 +263,10 @@ void NodeConfiguration::fromRosParam(
   ROS_INFO("Parsed RigidBodies section");
 
   if (nh.hasParam(rosparam::keys::Markers)) {
-    bool hasPointTopicName = nh.getParam(rosparam::keys::Markers + "/" + rosparam::keys::PointTopicName, markerConfig.markerTopicName);
+    bool hasMarkerTopicName = nh.getParam(rosparam::keys::Markers + "/" + rosparam::keys::MarkerTopic, markerConfig.markerTopicName);
     bool hasParentFrameId = nh.getParam(rosparam::keys::Markers + "/" + rosparam::keys::ParentFrameId, markerConfig.parentFrameId);
-    markerConfig.publishPoint = hasPointTopicName && hasParentFrameId;
-    ROS_INFO_COND(markerConfig.publishPoint, "Publishing free markers");
+    markerConfig.publishMarker = hasMarkerTopicName && hasParentFrameId;
+    ROS_INFO_COND(markerConfig.publishMarker, "Publishing free markers");
   }
 }
 

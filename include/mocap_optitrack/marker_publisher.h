@@ -43,7 +43,7 @@
 namespace mocap_optitrack
 {
 
-/// \brief Encapsulation of a RigidBody data publisher.
+/// \brief Unlabeled marker publisher
 class MarkerPublisher
 {
 public:
