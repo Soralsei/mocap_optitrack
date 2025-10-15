@@ -177,7 +177,7 @@ namespace mocap_optitrack
     ServerDescription serverDescription;
     PublisherConfigurations publisherConfigurations;
     PublisherConfiguration markerConfiguration;
-    DataModel dataModel;
+    data::DataModel dataModel;
     std::unique_ptr<UdpMulticastSocket> multicastClientSocketPtr;
     std::unique_ptr<RigidBodyPublishDispatcher> rigidBodyDispatcherPtr;
     std::unique_ptr<MarkerPublisher> markerPublisherPtr;

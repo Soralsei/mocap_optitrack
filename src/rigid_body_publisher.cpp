@@ -39,7 +39,7 @@ namespace mocap_optitrack
 
 namespace utilities
 {
-geometry_msgs::PoseStamped getRosPose(RigidBody const& body, const Version& coordinatesVersion)
+geometry_msgs::PoseStamped getRosPose(data::RigidBody const& body, const Version& coordinatesVersion)
 {
   geometry_msgs::PoseStamped poseStampedMsg;
   if (coordinatesVersion < Version("2.0") && coordinatesVersion >= Version("1.7"))
@@ -69,7 +69,7 @@ geometry_msgs::PoseStamped getRosPose(RigidBody const& body, const Version& coor
   }
   return poseStampedMsg;
 }
-nav_msgs::Odometry getRosOdom(RigidBody const& body, const Version& coordinatesVersion)
+nav_msgs::Odometry getRosOdom(data::RigidBody const& body, const Version& coordinatesVersion)
 {
   nav_msgs::Odometry OdometryMsg;
   if (coordinatesVersion < Version("2.0") && coordinatesVersion >= Version("1.7"))
@@ -124,7 +124,7 @@ RigidBodyPublisher::~RigidBodyPublisher()
 {
 }
 
-void RigidBodyPublisher::publish(ros::Time const& time, RigidBody const& body)
+void RigidBodyPublisher::publish(ros::Time const& time, data::RigidBody const& body)
 {
   // don't do anything if no new data was provided
   if (!body.hasValidData())
@@ -209,7 +209,7 @@ RigidBodyPublishDispatcher::RigidBodyPublishDispatcher(
 
 void RigidBodyPublishDispatcher::publish(
   ros::Time const& time,
-  std::vector<RigidBody> const& rigidBodies)
+  std::vector<data::RigidBody> const& rigidBodies)
 {
   for (auto const& rigidBody : rigidBodies)
   {

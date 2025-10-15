@@ -38,18 +38,18 @@ namespace natnet
 
     struct MessageInterface
     {
-        virtual void serialize(MessageBuffer&, mocap_optitrack::DataModel const*) {};
-        virtual void deserialize(MessageBuffer const&, mocap_optitrack::DataModel*) {};
+        virtual void serialize(MessageBuffer&, mocap_optitrack::data::DataModel const*) {};
+        virtual void deserialize(MessageBuffer const&, mocap_optitrack::data::DataModel*) {};
     };
 
     struct ConnectionRequestMessage : public MessageInterface
     {
-        virtual void serialize(MessageBuffer& msgBuffer, mocap_optitrack::DataModel const*);
+        virtual void serialize(MessageBuffer& msgBuffer, mocap_optitrack::data::DataModel const*);
     };
 
     struct ServerInfoMessage : public MessageInterface
     {
-        virtual void deserialize(MessageBuffer const&, mocap_optitrack::DataModel*);
+        virtual void deserialize(MessageBuffer const&, mocap_optitrack::data::DataModel*);
     };
 
     class DataFrameMessage : public MessageInterface
@@ -57,17 +57,17 @@ namespace natnet
         struct RigidBodyMessagePart
         {
             void deserialize(MessageBuffer::const_iterator&, 
-                mocap_optitrack::RigidBody&,
+                mocap_optitrack::data::RigidBody&,
                 mocap_optitrack::Version const&);
         };
 
     public:
-        virtual void deserialize(MessageBuffer const&, mocap_optitrack::DataModel*);
+        virtual void deserialize(MessageBuffer const&, mocap_optitrack::data::DataModel*);
     };
 
     struct MessageDispatcher
     {
-        static void dispatch(MessageBuffer const&, mocap_optitrack::DataModel*);
+        static void dispatch(MessageBuffer const&, mocap_optitrack::data::DataModel*);
     };
 }
 

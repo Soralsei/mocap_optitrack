@@ -101,7 +101,7 @@ namespace utilities
 
 void ConnectionRequestMessage::serialize(
   MessageBuffer& msgBuffer, 
-  mocap_optitrack::DataModel const*)
+  mocap_optitrack::data::DataModel const*)
 {
   natnet::Packet pkt;
   pkt.messageId = natnet::MessageType::Connect;
@@ -116,7 +116,7 @@ void ConnectionRequestMessage::serialize(
 
 void ServerInfoMessage::deserialize(
   MessageBuffer const& msgBuffer, 
-  mocap_optitrack::DataModel* dataModel)
+  mocap_optitrack::data::DataModel* dataModel)
 {
   char const* pBuffer = &msgBuffer[0];
   natnet::Packet const* packet = (natnet::Packet const*)pBuffer;
@@ -134,7 +134,7 @@ void ServerInfoMessage::deserialize(
 
 void DataFrameMessage::RigidBodyMessagePart::deserialize(
   MessageBuffer::const_iterator& msgBufferIter, 
-  mocap_optitrack::RigidBody& rigidBody,
+  mocap_optitrack::data::RigidBody& rigidBody,
   mocap_optitrack::Version const& natNetVersion)
 {
   // Read id, position and orientation of each rigid body
@@ -174,7 +174,7 @@ void DataFrameMessage::RigidBodyMessagePart::deserialize(
 
 void DataFrameMessage::deserialize(
   MessageBuffer const& msgBuffer, 
-  mocap_optitrack::DataModel* dataModel)
+  mocap_optitrack::data::DataModel* dataModel)
 {
   // Get iterator to beginning of buffer and skip the header
   MessageBuffer::const_iterator msgBufferIter = msgBuffer.begin();
@@ -187,7 +187,7 @@ void DataFrameMessage::deserialize(
 
   // Here on out its conveinent to get a pointer directly
   // to the ModelFrame object as well as the NatNetVersion
-  mocap_optitrack::ModelFrame* dataFrame = &(dataModel->dataFrame);
+  mocap_optitrack::data::ModelFrame* dataFrame = &(dataModel->dataFrame);
   mocap_optitrack::Version const& NatNetVersion = dataModel->getNatNetVersion();
 
   // Next 4 bytes is the number of data sets (markersets, rigidbodies, etc)
@@ -281,7 +281,7 @@ void DataFrameMessage::deserialize(
       // Loop through rigid bodies (bones) in skeleton
       for (int j=0; j < numRigidBodies; j++)
       {
-        mocap_optitrack::RigidBody rigidBody;
+        mocap_optitrack::data::RigidBody rigidBody;
         DataFrameMessage::RigidBodyMessagePart rigidBodyMessagePart;
         rigidBodyMessagePart.deserialize(msgBufferIter, rigidBody, NatNetVersion);
       } // next rigid body
@@ -482,7 +482,7 @@ void DataFrameMessage::deserialize(
 
 void MessageDispatcher::dispatch(
   MessageBuffer const& msgBuffer, 
-  mocap_optitrack::DataModel* dataModel)
+  mocap_optitrack::data::DataModel* dataModel)
 {
   // Grab message ID by casting to a natnet packet type
   char const* pMsgBuffer = &msgBuffer[0];

@@ -27,9 +27,9 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-#include <mocap_optitrack_msgs/Marker.h>
-#include <mocap_optitrack_msgs/MarkerInfo.h>
-#include <mocap_optitrack_msgs/Markers.h>
+#include <mocap_optitrack/Marker.h>
+#include <mocap_optitrack/MarkerInfo.h>
+#include <mocap_optitrack/Markers.h>
 #include <mocap_optitrack/marker_publisher.h>
 
 #include <geometry_msgs/TransformStamped.h>
@@ -42,7 +42,7 @@ namespace mocap_optitrack
 
   namespace utilities
   {
-    geometry_msgs::Point getRosPoint(Marker const &marker, const Version &coordinatesVersion)
+    geometry_msgs::Point getRosPoint(data::Marker const &marker, const Version &coordinatesVersion)
     {
       geometry_msgs::Point point;
       if (coordinatesVersion < Version("2.0") && coordinatesVersion >= Version("1.7"))
@@ -70,7 +70,7 @@ namespace mocap_optitrack
   {
     if (config.publishPoint)
     {
-      markerPublisher = nh.advertise<mocap_optitrack_msgs::Markers>(config.markerTopicName, 1000);
+      markerPublisher = nh.advertise<mocap_optitrack::Markers>(config.markerTopicName, 1000);
       ROS_INFO_STREAM("Publishing on topic " << config.markerTopicName);
     }
 
@@ -83,9 +83,9 @@ namespace mocap_optitrack
   {
   }
 
-  void MarkerPublisher::publish(ros::Time const &time, std::vector<Marker> const &markers)
+  void MarkerPublisher::publish(ros::Time const &time, std::vector<data::Marker> const &markers)
   {
-    mocap_optitrack_msgs::Markers markers_msg;
+    mocap_optitrack::Markers markers_msg;
     for (auto &&marker : markers)
     {
       // NaN?
@@ -95,11 +95,8 @@ namespace mocap_optitrack
         continue;
       }
 
-      mocap_optitrack_msgs::Marker marker_msg;
+      mocap_optitrack::Marker marker_msg;
       marker_msg.point = utilities::getRosPoint(marker, coordinatesVersion);
-
-      marker_msg.header.stamp = time;
-      marker_msg.header.frame_id = config.parentFrameId;
 
       marker_msg.info.markerId = marker.info.markerId;
       marker_msg.info.modelId = marker.info.modelId;
@@ -114,6 +111,8 @@ namespace mocap_optitrack
 
       markers_msg.markers.push_back(marker_msg);
     }
+    markers_msg.header.stamp = time;
+    markers_msg.header.frame_id = config.parentFrameId;
     markerPublisher.publish(markers_msg);
   }
 } // namespace mocap_optitrack

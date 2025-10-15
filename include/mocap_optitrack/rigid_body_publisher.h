@@ -51,7 +51,7 @@ public:
                      Version const& natNetVersion,
                      PublisherConfiguration const& config);
   ~RigidBodyPublisher();
-  void publish(ros::Time const& time, RigidBody const&);
+  void publish(ros::Time const& time, data::RigidBody const&);
 
 private:
   PublisherConfiguration config;
@@ -75,7 +75,7 @@ public:
   RigidBodyPublishDispatcher(ros::NodeHandle &nh,
                              Version const& natNetVersion,
                              PublisherConfigurations const& configs);
-  void publish(ros::Time const& time, std::vector<RigidBody> const&);
+  void publish(ros::Time const& time, std::vector<data::RigidBody> const&);
 };
 
 } // namespace

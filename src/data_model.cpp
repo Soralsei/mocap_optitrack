@@ -32,74 +32,71 @@
 namespace mocap_optitrack
 {
 
-RigidBody::RigidBody() :
-  isTrackingValid(false)
-{
-}
+  namespace data
+  {
 
-bool RigidBody::hasValidData() const
-{
-  return isTrackingValid;
-}
+    RigidBody::RigidBody() : isTrackingValid(false)
+    {
+    }
 
+    bool RigidBody::hasValidData() const
+    {
+      return isTrackingValid;
+    }
 
-void ModelDescription::clear()
-{
-  markerNames.clear();
-}
+    void ModelDescription::clear()
+    {
+      markerNames.clear();
+    }
 
-void MarkerSet::clear()
-{
-  markers.clear();
-}
+    void MarkerSet::clear()
+    {
+      markers.clear();
+    }
 
+    ModelFrame::ModelFrame() : latency(0.0)
+    {
+    }
 
-ModelFrame::ModelFrame() :
-  latency(0.0)
-{
-}
+    void ModelFrame::clear()
+    {
+      markerSets.clear();
+      otherMarkers.clear();
+      labeledMarkers.clear();
+      rigidBodies.clear();
+    }
 
-void ModelFrame::clear()
-{
-  markerSets.clear();
-  otherMarkers.clear();
-  labeledMarkers.clear();
-  rigidBodies.clear();
-}
+    ServerInfo::ServerInfo() : natNetVersion(0, 0, 0, 0),
+                               serverVersion(0, 0, 0, 0)
+    {
+    }
 
+    DataModel::DataModel() : hasValidServerInfo(false)
+    {
+    }
 
-ServerInfo::ServerInfo() :
-  natNetVersion(0, 0, 0, 0),
-  serverVersion(0, 0, 0, 0)
-{
-}
+    void DataModel::clear()
+    {
+      dataFrame.clear();
+    }
 
+    void DataModel::setVersions(int *nver, int *sver)
+    {
+      serverInfo.natNetVersion.setVersion(nver[0], nver[1], nver[2], nver[3]);
+      serverInfo.serverVersion.setVersion(sver[0], sver[1], sver[2], sver[3]);
+      hasValidServerInfo = true;
+    }
 
-DataModel::DataModel() :
-  hasValidServerInfo(false)
-{
-}
+    Version const &DataModel::getNatNetVersion() const
+    {
+      return serverInfo.natNetVersion;
+    }
 
-void DataModel::clear()
-{
-  dataFrame.clear();
-}
+    Version const &DataModel::getServerVersion() const
+    {
+      return serverInfo.serverVersion;
+    }
 
-void DataModel::setVersions(int* nver, int* sver)
-{
-  serverInfo.natNetVersion.setVersion(nver[0], nver[1], nver[2], nver[3]);
-  serverInfo.serverVersion.setVersion(sver[0], sver[1], sver[2], sver[3]);
-  hasValidServerInfo = true;
-}
+  } // namespace data
 
-Version const& DataModel::getNatNetVersion() const
-{
-  return serverInfo.natNetVersion;
-}
-
-Version const& DataModel::getServerVersion() const
-{
-  return serverInfo.serverVersion;
-}
-
-}  // namespace mocap_optitrack
+} // namespace mocap_optitrack

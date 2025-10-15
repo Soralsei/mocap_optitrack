@@ -1,0 +1,10 @@
+int32 markerId
+int32 modelId
+float32 size
+bool occluded
+bool pcSolved
+bool modelSolved
+bool hasModel
+bool unlabeled
+bool active
+float32 residual

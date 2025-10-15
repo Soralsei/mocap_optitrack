@@ -9,13 +9,6 @@ rigid_bodies:
         tf: tf
         child_frame_id: mocap/lidar
         parent_frame_id: world
-#     '2':
-#         pose: Robot_2/pose
-#         pose2d: Robot_2/ground_pose
-#         odom: Robot_2/Odom
-#         tf: tf
-#         child_frame_id: Robot_2/base_link
-#         parent_frame_id: world
 markers:
     point: markers
     parent_frame_id: world

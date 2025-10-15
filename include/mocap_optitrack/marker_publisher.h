@@ -51,7 +51,7 @@ public:
                      Version const& natNetVersion,
                      PublisherConfiguration const& config);
   ~MarkerPublisher();
-  void publish(ros::Time const& time, std::vector<Marker> const&);
+  void publish(ros::Time const& time, std::vector<data::Marker> const&);
 
 private:
   PublisherConfiguration config;
